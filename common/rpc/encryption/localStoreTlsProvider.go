@@ -68,10 +68,19 @@ type localStoreTlsProvider struct {
 	cachedFrontendServerConfig  *tls.Config
 	cachedFrontendClientConfig  *tls.Config
 
+	certProviderFactory CertProviderFactory
+
 	ticker *time.Ticker
 	logger log.Logger
 	stop   chan bool
 	scope  tally.Scope
+}
+
+type certProviders struct {
+	InternodeCertProvider          CertProvider
+	FrontendCertProvider           CertProvider
+	WorkerCertProvider             CertProvider
+	FrontendPerHostCertProviderMap *localStorePerHostCertProviderMap
 }
 
 var _ TLSConfigProvider = (*localStoreTlsProvider)(nil)
@@ -80,29 +89,58 @@ var _ CertExpirationChecker = (*localStoreTlsProvider)(nil)
 func NewLocalStoreTlsProvider(tlsConfig *config.RootTLS, scope tally.Scope, logger log.Logger, certProviderFactory CertProviderFactory,
 ) (TLSConfigProvider, error) {
 
-	internodeProvider := certProviderFactory(&tlsConfig.Internode, nil, nil, tlsConfig.RefreshInterval, logger)
-	var workerProvider CertProvider
-	if tlsConfig.SystemWorker.CertFile != "" || tlsConfig.SystemWorker.CertData != "" { // explicit system worker config
-		workerProvider = certProviderFactory(nil, &tlsConfig.SystemWorker, nil, tlsConfig.RefreshInterval, logger)
-	} else { // legacy implicit system worker config case
-		internodeWorkerProvider := certProviderFactory(&tlsConfig.Internode, nil, &tlsConfig.Frontend.Client, tlsConfig.RefreshInterval, logger)
-		workerProvider = internodeWorkerProvider
-	}
+	providers := getCertProviders(tlsConfig, certProviderFactory, logger)
 
 	provider := &localStoreTlsProvider{
-		internodeCertProvider:       internodeProvider,
-		internodeClientCertProvider: internodeProvider,
-		frontendCertProvider:        certProviderFactory(&tlsConfig.Frontend, nil, nil, tlsConfig.RefreshInterval, logger),
-		workerCertProvider:          workerProvider,
-		frontendPerHostCertProviderMap: newLocalStorePerHostCertProviderMap(
-			tlsConfig.Frontend.PerHostOverrides, certProviderFactory, tlsConfig.RefreshInterval, logger),
-		RWMutex:  sync.RWMutex{},
-		settings: tlsConfig,
-		scope:    scope,
-		logger:   logger,
+		internodeCertProvider:          providers.InternodeCertProvider,
+		internodeClientCertProvider:    providers.InternodeCertProvider,
+		frontendCertProvider:           providers.FrontendCertProvider,
+		workerCertProvider:             providers.WorkerCertProvider,
+		frontendPerHostCertProviderMap: providers.FrontendPerHostCertProviderMap,
+		RWMutex:                        sync.RWMutex{},
+		settings:                       tlsConfig,
+		scope:                          scope,
+		logger:                         logger,
+		certProviderFactory:            certProviderFactory,
 	}
 	provider.initialize()
 	return provider, nil
+}
+
+func getCertProviders(tlsConfig *config.RootTLS, certProviderFactory CertProviderFactory, logger log.Logger) *certProviders {
+
+	providers := certProviders{}
+
+	providers.InternodeCertProvider = certProviderFactory(&tlsConfig.Internode, nil, nil, tlsConfig.RefreshInterval, logger)
+	if tlsConfig.SystemWorker.CertFile != "" || tlsConfig.SystemWorker.CertData != "" { // explicit system worker config
+		providers.WorkerCertProvider = certProviderFactory(nil, &tlsConfig.SystemWorker, nil, tlsConfig.RefreshInterval, logger)
+	} else { // legacy implicit system worker config case
+		providers.WorkerCertProvider = certProviderFactory(&tlsConfig.Internode, nil, &tlsConfig.Frontend.Client, tlsConfig.RefreshInterval, logger)
+	}
+	providers.FrontendCertProvider = certProviderFactory(&tlsConfig.Frontend, nil, nil, tlsConfig.RefreshInterval, logger)
+	providers.FrontendPerHostCertProviderMap = newLocalStorePerHostCertProviderMap(
+		tlsConfig.Frontend.PerHostOverrides, certProviderFactory, tlsConfig.RefreshInterval, logger)
+
+	return &providers
+}
+
+func (s *localStoreTlsProvider) UpdateConfig(tlsConfig *config.RootTLS) error {
+
+	providers := getCertProviders(tlsConfig, s.certProviderFactory, s.logger)
+	s.Lock()
+	defer s.Unlock()
+
+	s.internodeCertProvider = providers.InternodeCertProvider
+	s.internodeClientCertProvider = providers.InternodeCertProvider
+	s.frontendCertProvider = providers.FrontendCertProvider
+	s.workerCertProvider = providers.WorkerCertProvider
+	s.frontendPerHostCertProviderMap = providers.FrontendPerHostCertProviderMap
+
+	s.cachedFrontendClientConfig = nil
+	s.cachedFrontendServerConfig = nil
+	s.cachedInternodeClientConfig = nil
+	s.cachedInternodeServerConfig = nil
+	return nil
 }
 
 func (s *localStoreTlsProvider) initialize() {

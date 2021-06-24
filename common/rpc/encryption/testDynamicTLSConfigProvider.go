@@ -72,6 +72,10 @@ func (t *TestDynamicTLSConfigProvider) GetExpiringCerts(timeWindow time.Duration
 	panic("implement me")
 }
 
+func (t *TestDynamicTLSConfigProvider) UpdateConfig(tlsConfig *config.RootTLS) error {
+	panic("implement me")
+}
+
 var _ TLSConfigProvider = (*TestDynamicTLSConfigProvider)(nil)
 
 func NewTestDynamicTLSConfigProvider(

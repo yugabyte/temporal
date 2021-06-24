@@ -43,6 +43,7 @@ type (
 		GetFrontendServerConfig() (*tls.Config, error)
 		GetFrontendClientConfig() (*tls.Config, error)
 		GetExpiringCerts(timeWindow time.Duration) (expiring CertExpirationMap, expired CertExpirationMap, err error)
+		UpdateConfig(tlsConfig *config.RootTLS) error
 	}
 
 	// CertProvider is a common interface to load raw TLS/X509 primitives.
