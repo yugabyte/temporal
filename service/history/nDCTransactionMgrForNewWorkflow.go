@@ -272,7 +272,7 @@ func (r *nDCTransactionMgrForNewWorkflowImpl) createAsZombie(
 	switch err.(type) {
 	case nil:
 		return nil
-	case *persistence.WorkflowExecutionAlreadyStartedError:
+	case *persistence.WorkflowConditionFailedError:
 		// workflow already created
 		return nil
 	default:

@@ -1033,7 +1033,9 @@ func (c *ContextImpl) createWorkflowExecutionWithRetry(
 	switch err.(type) {
 	case nil:
 		return resp, nil
-	case *persistence.WorkflowExecutionAlreadyStartedError:
+	case *persistence.CurrentWorkflowConditionFailedError,
+		*persistence.WorkflowConditionFailedError,
+		*persistence.ConditionFailedError:
 		// it is possible that workflow already exists and caller need to apply
 		// workflow ID reuse policy
 		return nil, err
@@ -1104,7 +1106,9 @@ func (c *ContextImpl) updateWorkflowExecutionWithRetry(
 	switch err.(type) {
 	case nil:
 		return resp, nil
-	case *persistence.ConditionFailedError:
+	case *persistence.CurrentWorkflowConditionFailedError,
+		*persistence.WorkflowConditionFailedError,
+		*persistence.ConditionFailedError:
 		// TODO get rid of ErrConflict
 		return nil, consts.ErrConflict
 	default:
