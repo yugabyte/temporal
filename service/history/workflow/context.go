@@ -196,7 +196,7 @@ func (c *ContextImpl) Lock(
 	case CallerTypeAPI:
 		return c.mutex.LockHigh(ctx)
 	case CallerTypeTask:
-		return c.mutex.LockLow(ctx)
+		return c.mutex.LockHigh(ctx)
 	default:
 		panic(fmt.Sprintf("unknown caller type: %v", caller))
 	}
@@ -209,7 +209,7 @@ func (c *ContextImpl) Unlock(
 	case CallerTypeAPI:
 		c.mutex.UnlockHigh()
 	case CallerTypeTask:
-		c.mutex.UnlockLow()
+		c.mutex.UnlockHigh()
 	default:
 		panic(fmt.Sprintf("unknown caller type: %v", caller))
 	}
