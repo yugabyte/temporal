@@ -1194,7 +1194,8 @@ func (t *transferQueueActiveTaskExecutor) startWorkflowWithRetry(
 		t.shard.GetTimeSource().Now(),
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), transferActiveTaskDefaultTimeout)
+	// temp workaround to avoid piling up requests on history service.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 60)//transferActiveTaskDefaultTimeout)
 	defer cancel()
 	var response *historyservice.StartWorkflowExecutionResponse
 	var err error
