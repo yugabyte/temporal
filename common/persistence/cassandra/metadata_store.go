@@ -45,20 +45,20 @@ const (
 const (
 	templateCreateNamespaceQuery = `INSERT INTO namespaces_by_id (` +
 		`id, name) ` +
-		`VALUES(?, ?) IF NOT EXISTS`
+		`VALUES(?, ?) IF NOT EXISTS RETURNS STATUS AS ROW`
 
 	templateGetNamespaceQuery = `SELECT name ` +
 		`FROM namespaces_by_id ` +
 		`WHERE id = ?`
 
 	templateDeleteNamespaceQuery = `DELETE FROM namespaces_by_id ` +
-		`WHERE id = ?`
+		`WHERE id = ? RETURNS STATUS AS ROW`
 
 	templateNamespaceColumns = `id, name, detail, detail_encoding, notification_version, is_global_namespace`
 
 	templateCreateNamespaceByNameQueryWithinBatchV2 = `INSERT INTO namespaces ` +
 		`( namespaces_partition, ` + templateNamespaceColumns + `) ` +
-		`VALUES(?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS`
+		`VALUES(?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS RETURNS STATUS AS ROW`
 
 	templateGetNamespaceByNameQueryV2 = templateListNamespaceQueryV2 + `and name = ?`
 
@@ -68,7 +68,7 @@ const (
 		`is_global_namespace = ? ,` +
 		`notification_version = ? ` +
 		`WHERE namespaces_partition = ? ` +
-		`and name = ?`
+		`and name = ? RETURNS STATUS AS ROW`
 
 	templateGetMetadataQueryV2 = `SELECT notification_version ` +
 		`FROM namespaces ` +
@@ -79,11 +79,11 @@ const (
 		`SET notification_version = ? ` +
 		`WHERE namespaces_partition = ? ` +
 		`and name = ? ` +
-		`IF notification_version = ? `
+		`IF notification_version = ? RETURNS STATUS AS ROW`
 
 	templateDeleteNamespaceByNameQueryV2 = `DELETE FROM namespaces ` +
 		`WHERE namespaces_partition = ? ` +
-		`and name = ?`
+		`and name = ? RETURNS STATUS AS ROW`
 
 	templateListNamespaceQueryV2 = `SELECT ` +
 		templateNamespaceColumns +
