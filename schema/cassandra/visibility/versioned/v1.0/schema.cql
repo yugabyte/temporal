@@ -1,4 +1,7 @@
-CREATE TABLE open_executions (
+DROP TABLE IF EXISTS open_executions;
+
+
+CREATE TABLE IF NOT EXISTS open_executions (
   namespace_id            uuid,
   namespace_partition     int,
   workflow_id          text,
@@ -15,14 +18,15 @@ CREATE TABLE open_executions (
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy',
     'tombstone_threshold': 0.4
   }
-  AND GC_GRACE_SECONDS = 60;
-
+  AND GC_GRACE_SECONDS = 60
+  AND transactions = { 'enabled' : true };
 
 CREATE INDEX open_by_workflow_id ON open_executions (workflow_id);
-CREATE INDEX open_by_type ON open_executions (workflow_type_name);
+CREATE INDEX open_by_type ON open_executions (workflow_type_name);  
 
+DROP TABLE IF EXISTS open_executions;
 
-CREATE TABLE closed_executions (
+CREATE TABLE IF NOT EXISTS closed_executions (
   namespace_id            uuid,
   namespace_partition     int,
   workflow_id          text,
@@ -43,7 +47,3 @@ CREATE TABLE closed_executions (
   }
   AND GC_GRACE_SECONDS = 172800;
 
-CREATE INDEX closed_by_workflow_id ON closed_executions (workflow_id);
-CREATE INDEX closed_by_close_time ON closed_executions (close_time);
-CREATE INDEX closed_by_type ON closed_executions (workflow_type_name);
-CREATE INDEX closed_by_status ON closed_executions (status);

@@ -41,7 +41,7 @@ const (
 	// below are templates for history_node table
 	v2templateUpsertHistoryNode = `INSERT INTO history_node (` +
 		`tree_id, branch_id, node_id, prev_txn_id, txn_id, data, data_encoding) ` +
-		`VALUES (?, ?, ?, ?, ?, ?, ?) `
+		`VALUES (?, ?, ?, ?, ?, ?, ?) RETURNS STATUS AS ROW`
 
 	v2templateReadHistoryNode = `SELECT node_id, prev_txn_id, txn_id, data, data_encoding FROM history_node ` +
 		`WHERE tree_id = ? AND branch_id = ? AND node_id >= ? AND node_id < ? `
@@ -52,18 +52,18 @@ const (
 	v2templateReadHistoryNodeMetadata = `SELECT node_id, prev_txn_id, txn_id FROM history_node ` +
 		`WHERE tree_id = ? AND branch_id = ? AND node_id >= ? AND node_id < ? `
 
-	v2templateDeleteHistoryNode = `DELETE FROM history_node WHERE tree_id = ? AND branch_id = ? AND node_id = ? AND txn_id = ? `
+	v2templateDeleteHistoryNode = `DELETE FROM history_node WHERE tree_id = ? AND branch_id = ? AND node_id = ? AND txn_id = ? RETURNS STATUS AS ROW`
 
-	v2templateRangeDeleteHistoryNode = `DELETE FROM history_node WHERE tree_id = ? AND branch_id = ? AND node_id >= ? `
+	v2templateRangeDeleteHistoryNode = `DELETE FROM history_node WHERE tree_id = ? AND branch_id = ? AND node_id >= ? RETURNS STATUS AS ROW`
 
 	// below are templates for history_tree table
 	v2templateInsertTree = `INSERT INTO history_tree (` +
 		`tree_id, branch_id, branch, branch_encoding) ` +
-		`VALUES (?, ?, ?, ?) `
+		`VALUES (?, ?, ?, ?) RETURNS STATUS AS ROW `
 
 	v2templateReadAllBranches = `SELECT branch_id, branch, branch_encoding FROM history_tree WHERE tree_id = ? `
 
-	v2templateDeleteBranch = `DELETE FROM history_tree WHERE tree_id = ? AND branch_id = ? `
+	v2templateDeleteBranch = `DELETE FROM history_tree WHERE tree_id = ? AND branch_id = ? RETURNS STATUS AS ROW`
 
 	v2templateScanAllTreeBranches = `SELECT tree_id, branch_id, branch, branch_encoding FROM history_tree `
 )

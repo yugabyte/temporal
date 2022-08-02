@@ -162,6 +162,3 @@ CREATE TABLE cluster_membership
 ) WITH COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   };
-
-CREATE INDEX cm_lastheartbeat_idx on cluster_membership (last_heartbeat);
-CREATE INDEX cm_sessionstart_idx on cluster_membership (session_start);
