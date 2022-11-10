@@ -1,10 +1,10 @@
-CREATE TYPE IF NOT EXISTS serialized_event_batch(
+CREATE TYPE serialized_event_batch (
   encoding_type text,
   version       int,
   data          blob
 );
 
-CREATE TABLE IF NOT EXISTS executions (
+CREATE TABLE executions (
   shard_id                       int,
   type                           int, -- enum RowType { Shard, Execution, TransferTask, TimerTask, ReplicationTask}
   namespace_id                      uuid,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS executions (
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   };
 
-CREATE TABLE IF NOT EXISTS history_node (
+CREATE TABLE history_node (
   tree_id           uuid,
   branch_id         uuid,
   node_id           bigint, -- node_id: first eventID in a batch of events
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS history_node (
      'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
 };
 
-CREATE TABLE IF NOT EXISTS history_tree (
+CREATE TABLE history_tree (
   tree_id               uuid,
   branch_id             uuid,
   branch                blob,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS history_tree (
 };
 
 -- Stores activity or workflow tasks
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE tasks (
   namespace_id             uuid,
   task_queue_name        text,
   task_queue_type        int, -- enum TaskQueueType {ActivityTask, WorkflowTask}
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   };
 
 -- this table is only used for storage of mapping of namespace uuid to namespace name
-CREATE TABLE IF NOT EXISTS namespaces_by_id (
+CREATE TABLE namespaces_by_id (
   id     uuid,
   name   text,
   PRIMARY KEY (id)
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS namespaces_by_id (
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'  };
 
 
-CREATE TABLE IF NOT EXISTS namespaces (
+CREATE TABLE namespaces (
   namespaces_partition          int,
   name                          text,
   id                            uuid,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS namespaces (
      'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
    };
 
-CREATE TABLE IF NOT EXISTS queue (
+CREATE TABLE queue (
   queue_type      int,
   message_id      bigint,
   message_payload blob,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS queue (
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   };
 
-CREATE TABLE IF NOT EXISTS queue_metadata (
+CREATE TABLE queue_metadata (
   queue_type        int,
   cluster_ack_level map<text, bigint>,
   version           bigint,
@@ -130,7 +130,7 @@ PRIMARY KEY (queue_type)
      'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
    };
 
-CREATE TABLE IF NOT EXISTS cluster_metadata (
+CREATE TABLE cluster_metadata (
   metadata_partition      int,
   immutable_data          blob,
   immutable_data_encoding text,
@@ -138,8 +138,6 @@ CREATE TABLE IF NOT EXISTS cluster_metadata (
 ) WITH COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
     };
-
-DROP TABLE IF EXISTS cluster_membership;
 
 CREATE TABLE cluster_membership
 (
@@ -154,6 +152,5 @@ CREATE TABLE cluster_membership
 ) WITH COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
     };
-
 
 

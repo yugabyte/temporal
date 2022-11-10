@@ -1,7 +1,4 @@
-DROP TABLE IF EXISTS open_executions;
-
-
-CREATE TABLE IF NOT EXISTS open_executions (
+CREATE TABLE open_executions (
   namespace_id            uuid,
   namespace_partition     int,
   workflow_id          text,
@@ -24,9 +21,7 @@ CREATE TABLE IF NOT EXISTS open_executions (
 CREATE INDEX open_by_workflow_id ON open_executions (workflow_id);
 CREATE INDEX open_by_type ON open_executions (workflow_type_name);  
 
-DROP TABLE IF EXISTS open_executions;
-
-CREATE TABLE IF NOT EXISTS closed_executions (
+CREATE TABLE closed_executions (
   namespace_id            uuid,
   namespace_partition     int,
   workflow_id          text,
@@ -45,5 +40,10 @@ CREATE TABLE IF NOT EXISTS closed_executions (
   AND COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   }
-  AND GC_GRACE_SECONDS = 172800;
+  AND GC_GRACE_SECONDS = 172800
+  AND transactions = { 'enabled' : true };
 
+CREATE INDEX closed_by_workflow_id ON closed_executions (workflow_id);
+CREATE INDEX closed_by_close_time ON closed_executions (close_time);
+CREATE INDEX closed_by_type ON closed_executions (workflow_type_name);
+CREATE INDEX closed_by_status ON closed_executions (status);

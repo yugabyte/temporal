@@ -15,8 +15,7 @@ CREATE TABLE open_executions (
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy',
     'tombstone_threshold': 0.6
   }
-  AND GC_GRACE_SECONDS = 60
-  AND transactions = { 'enabled' : true };
+  AND GC_GRACE_SECONDS = 60;
 
 
 CREATE INDEX open_by_workflow_id ON open_executions (workflow_id);
@@ -44,3 +43,7 @@ CREATE TABLE closed_executions (
   }
   AND GC_GRACE_SECONDS = 172800;
 
+CREATE INDEX closed_by_workflow_id ON closed_executions (workflow_id);
+CREATE INDEX closed_by_close_time ON closed_executions (close_time);
+CREATE INDEX closed_by_type ON closed_executions (workflow_type_name);
+CREATE INDEX closed_by_status ON closed_executions (status);
