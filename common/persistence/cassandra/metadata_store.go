@@ -45,14 +45,14 @@ const (
 const (
 	templateCreateNamespaceQuery = `INSERT INTO namespaces_by_id (` +
 		`id, name) ` +
-		`VALUES(?, ?) IF NOT EXISTS `
+		`VALUES(?, ?) IF NOT EXISTS`
 
 	templateGetNamespaceQuery = `SELECT name ` +
 		`FROM namespaces_by_id ` +
 		`WHERE id = ?`
 
 	templateDeleteNamespaceQuery = `DELETE FROM namespaces_by_id ` +
-		`WHERE id = ? `
+		`WHERE id = ?`
 
 	templateNamespaceColumns = `id, name, detail, detail_encoding, notification_version, is_global_namespace`
 
